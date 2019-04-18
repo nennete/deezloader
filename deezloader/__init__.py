@@ -72,7 +72,7 @@ def request(url, control=False):
         pass
     return thing
 class Login:
-      def __init__(self, mail, password, token=""):
+      def __init__(self, mail, password, cookie_sid, token=""):
           self.spo = spotipy.Spotify(auth=generate_token())
           self.req = requests.Session()
           check = self.get_api("deezer.getUserData")['checkFormLogin']
@@ -82,15 +82,17 @@ class Login:
                        "password": password,
                        "checkFormLogin": check
           }
-          end = self.req.post("https://www.deezer.com/ajax/action.php", post_data).text
-          if "success" == end:
-           print("Success, you are in :)")
-          else:
-              if token == "":
-               raise BadCredentials(end + ", and no token provided")
-              self.req.cookies["arl"] = token
-              if self.req.get("https://www.deezer.com/").text.split("'deezer_user_id': ")[1].split(",")[0] == "0":
-               raise BadCredentials("Wrong token :(")
+          self.req.cookies.clear()
+          self.req.cookies.update({'sid': cookie_sid, 'comeback':'1'})
+          #end = self.req.post("https://www.deezer.com/ajax/action.php", post_data).text
+          #if "success" == end:
+          # print("Success, you are in :)")
+          #else:
+            #  if token == "":
+            #   raise BadCredentials(end + ", and no token provided")
+            #  self.req.cookies["arl"] = token
+            #  if self.req.get("https://www.deezer.com/").text.split("'deezer_user_id': ")[1].split(",")[0] == "0":
+            #   raise BadCredentials("Wrong token :(")
       def get_api(self, method="", api_token="null", json=""):
           params = {
                     "api_version": "1.0",
@@ -118,7 +120,7 @@ class Login:
                  datas['author'] = " & ".join(infos['SNG_CONTRIBUTORS']['author'])
               except:
                  datas['author'] = ""
-              try:   
+              try:
                  datas['composer'] = " & ".join(infos['SNG_CONTRIBUTORS']['composer'])
               except:
                  datas['composer'] = ""
@@ -325,7 +327,7 @@ class Login:
                          URL = url['data'][b]['link']
                          break
                  except IndexError:
-                    names.append(dir + name) 
+                    names.append(dir + name)
                     print("\nTrack not found: " + music[a] + " - " + artist[a])
                     continue
                  try:
